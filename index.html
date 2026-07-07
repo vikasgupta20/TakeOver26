@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FlexSpace — Premium Community Facility Reservations</title>
   <meta name="description" content="FlexSpace is a premium resource reservation platform for gated communities. Book badminton courts, clubhouses, and meeting rooms with ease." />
-  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.51/build/spline-viewer.js"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -633,11 +632,32 @@
       }, 500);
     }
 
-    // Start when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init3DModels);
+    function shouldEnable3D() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isSmallScreen = window.matchMedia('(max-width: 1024px)').matches;
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const saveData = !!(conn && conn.saveData);
+      const isSlowNet = !!(conn && typeof conn.effectiveType === 'string' && conn.effectiveType.includes('2g'));
+
+      return !prefersReducedMotion && !isSmallScreen && !saveData && !isSlowNet;
+    }
+
+    function start3DWhenIdle() {
+      if (!shouldEnable3D()) return;
+
+      const run = () => init3DModels();
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(run, { timeout: 3000 });
+      } else {
+        setTimeout(run, 1200);
+      }
+    }
+
+    // Defer heavy 3D initialization until page is fully loaded and browser is idle.
+    if (document.readyState === 'complete') {
+      start3DWhenIdle();
     } else {
-      init3DModels();
+      window.addEventListener('load', start3DWhenIdle, { once: true });
     }
   </script>
 </body>

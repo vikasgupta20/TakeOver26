@@ -120,6 +120,8 @@ const state = {
   slots: []                 // Current slot data from API
 };
 
+let liveSlotsInitialized = false;
+
 
 // ─────────────────────────────────────────────
 //  DOM REFERENCES
@@ -462,6 +464,11 @@ function openSchedule() {
   dom.tabTomorrow.classList.remove('active');
   dom.tabToday.textContent = `Today · ${getDateDisplay('today')}`;
   dom.tabTomorrow.textContent = `Tomorrow · ${getDateDisplay('tomorrow')}`;
+
+  if (!liveSlotsInitialized) {
+    initLiveSlots();
+    liveSlotsInitialized = true;
+  }
 
   fetchAndRenderSlots();
   scrollToSection('schedule');
@@ -1134,8 +1141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initNavbarScroll();
   initActiveNavLink();
   initHamburger();
-  initLiveSlots();
-
   // Check auth session
   await checkAuth();
 
