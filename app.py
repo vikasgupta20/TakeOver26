@@ -33,6 +33,12 @@ bcrypt = Bcrypt(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Ensure schema and seed data exist when running under WSGI servers (e.g., gunicorn on Render).
+try:
+    seed()
+except Exception as exc:
+    app.logger.exception("Startup seed failed: %s", exc)
+
 # ─── SSE Client Queues ──────────────────────────────────
 sse_clients = []
 
