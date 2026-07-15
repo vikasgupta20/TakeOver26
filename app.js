@@ -23,6 +23,17 @@ const API = {
     data._status = res.status;
     return data;
   },
+  async put(url, body) {
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    data._status = res.status;
+    return data;
+  },
   async del(url) {
     const res = await fetch(url, {
       method: 'DELETE',
@@ -106,6 +117,28 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+/** Format date more compactly for cards */
+function formatDateShort(dateStr) {
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  if (dateStr === today) return 'Today';
+  if (dateStr === tomorrow) return 'Tomorrow';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+/** Capitalize first letter */
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/** Get skill level display label */
+function getSkillLabel(level) {
+  if (level === 'any') return 'Any Level';
+  return capitalize(level);
+}
+
 
 // ─────────────────────────────────────────────
 //  APPLICATION STATE
@@ -117,7 +150,14 @@ const state = {
   activeUnit: null,         // Currently selected sub-unit (or parent if no units)
   activeDay: 'today',       // 'today' | 'tomorrow'
   selectedSlot: null,       // { start, end, label } or null
-  slots: []                 // Current slot data from API
+  slots: [],                // Current slot data from API
+  // Find Players state
+  fpActiveTab: 'discover',  // 'discover' | 'mygames'
+  fpMyGamesTab: 'hosted',   // 'hosted' | 'joined'
+  fpJoiningRequestId: null, // ID of request being joined
+  fpJoiningData: null,      // Data of request being joined
+  fpCreateBookingId: null,  // Booking ID for creating player request
+  fpCreateBookingData: null // Booking data for creating player request
 };
 
 let liveSlotsInitialized = false;
@@ -140,6 +180,7 @@ const dom = {
   userNameDisplay: $('#userNameDisplay'),
   userDropdown:    $('#userDropdown'),
   navDashboardLink:$('#navDashboardLink'),
+  navFindPlayersLink: $('#navFindPlayersLink'),
   facilitiesGrid:  $('#facilitiesGrid'),
   scheduleHeader:  $('#scheduleHeader'),
   scheduleEye:     $('#scheduleEyebrow'),
@@ -194,7 +235,57 @@ const dom = {
   qrModalMeta:     $('#qrModalMeta'),
   qrPassDetails:   $('#qrPassDetails'),
   // Live badge
-  liveBadge:       $('#liveBadge')
+  liveBadge:       $('#liveBadge'),
+  // Find Players
+  findPlayersSection: $('#findplayers'),
+  fpTabDiscover:   $('#fpTabDiscover'),
+  fpTabMyGames:    $('#fpTabMyGames'),
+  fpDiscoverView:  $('#fpDiscoverView'),
+  fpMyGamesView:   $('#fpMyGamesView'),
+  fpGamesGrid:     $('#fpGamesGrid'),
+  fpFilterSport:   $('#fpFilterSport'),
+  fpFilterSkill:   $('#fpFilterSkill'),
+  fpFilterDate:    $('#fpFilterDate'),
+  fpClearFilters:  $('#fpClearFilters'),
+  fpMgHosted:      $('#fpMgHosted'),
+  fpMgJoined:      $('#fpMgJoined'),
+  fpMyGamesGrid:   $('#fpMyGamesGrid'),
+  // Create Player Request modal
+  createPRModalOverlay: $('#createPRModalOverlay'),
+  createPRModalClose:   $('#createPRModalClose'),
+  createPRForm:         $('#createPRForm'),
+  prBookingItems:       $('#prBookingItems'),
+  prPlayersNeeded:      $('#prPlayersNeeded'),
+  prSkillLevel:         $('#prSkillLevel'),
+  prDescription:        $('#prDescription'),
+  prCharCounter:        $('#prCharCounter'),
+  prError:              $('#prError'),
+  // Join Game modal
+  joinGameModalOverlay: $('#joinGameModalOverlay'),
+  joinGameModalClose:   $('#joinGameModalClose'),
+  joinConfirmView:      $('#joinConfirmView'),
+  joinSuccessView:      $('#joinSuccessView'),
+  joinGameDetails:      $('#joinGameDetails'),
+  joinGameMeta:         $('#joinGameMeta'),
+  btnConfirmJoin:       $('#btnConfirmJoin'),
+  btnCancelJoin:        $('#btnCancelJoin'),
+  joinSuccessDetails:   $('#joinSuccessDetails'),
+  btnViewGameAfterJoin: $('#btnViewGameAfterJoin'),
+  btnViewBookingsAfterJoin: $('#btnViewBookingsAfterJoin'),
+  // Game Detail modal
+  gameDetailModalOverlay: $('#gameDetailModalOverlay'),
+  gameDetailModalClose:   $('#gameDetailModalClose'),
+  gameDetailContent:      $('#gameDetailContent'),
+  // Edit PR modal
+  editPRModalOverlay: $('#editPRModalOverlay'),
+  editPRModalClose:   $('#editPRModalClose'),
+  editPRForm:         $('#editPRForm'),
+  editPRId:           $('#editPRId'),
+  editPRPlayersNeeded:$('#editPRPlayersNeeded'),
+  editPRSkillLevel:   $('#editPRSkillLevel'),
+  editPRDescription:  $('#editPRDescription'),
+  editPRCharCounter:  $('#editPRCharCounter'),
+  editPRError:        $('#editPRError'),
 };
 
 
@@ -218,6 +309,7 @@ function updateAuthUI() {
     dom.navAuthButtons.style.display = 'none';
     dom.navUserMenu.style.display = 'block';
     dom.navDashboardLink.style.display = 'list-item';
+    dom.navFindPlayersLink.style.display = 'list-item';
     dom.userAvatarInitial.textContent = state.user.name.charAt(0).toUpperCase();
     const flatDisplay = state.user.flat_no ? ` (${state.user.flat_no})` : '';
     dom.userNameDisplay.textContent = state.user.name + flatDisplay;
@@ -225,7 +317,9 @@ function updateAuthUI() {
     dom.navAuthButtons.style.display = 'flex';
     dom.navUserMenu.style.display = 'none';
     dom.navDashboardLink.style.display = 'none';
+    dom.navFindPlayersLink.style.display = 'none';
     dom.dashboardSection.style.display = 'none';
+    dom.findPlayersSection.style.display = 'none';
   }
 }
 
@@ -299,12 +393,54 @@ async function handleLogout() {
   updateAuthUI();
   closeUserDropdown();
   dom.dashboardSection.style.display = 'none';
+  dom.findPlayersSection.style.display = 'none';
   showToast('Logged out successfully.');
 }
 
 function showFormError(el, msg) {
   el.textContent = msg;
   el.style.display = 'block';
+}
+
+async function handleGoogleAuth() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const idToken = await result.user.getIdToken();
+
+    // Send the Firebase ID token to our backend for verification
+    const data = await API.post('/api/auth/google', { id_token: idToken });
+
+    if (data._status === 200 || data._status === 201) {
+      state.user = data.user;
+      updateAuthUI();
+      closeAllModals();
+
+      // If admin, redirect to admin dashboard
+      if (data.user.role === 'admin') {
+        window.location.href = '/admin';
+        return;
+      }
+
+      if (data.new_user) {
+        showToast(`Welcome to FlexSpace, ${data.user.name}!`);
+      } else {
+        showToast(`Welcome back, ${data.user.name}!`);
+      }
+    } else {
+      showToastError(data.error || 'Google sign-in failed.');
+    }
+
+    // Sign out from Firebase client — we use server sessions, not Firebase sessions
+    await firebase.auth().signOut();
+
+  } catch (err) {
+    // User cancelled the popup or other error
+    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+      console.error('Google auth error:', err);
+      showToastError('Google sign-in failed. Please try again.');
+    }
+  }
 }
 
 
@@ -620,11 +756,23 @@ async function handleBookingConfirm() {
     closeModal(dom.modalOverlay);
     fetchAndRenderSlots();
     showToast(data.message || 'Booking confirmed!');
+
+    // If sport booking, offer Find Players
+    if (data.booking && data.booking.is_sport) {
+      setTimeout(() => {
+        offerFindPlayers(data.booking);
+      }, 1000);
+    }
   } else {
     closeModal(dom.modalOverlay);
     showToastError(data.error || 'Booking failed. Please try again.');
     fetchAndRenderSlots(); // Refresh to show current state
   }
+}
+
+/** Show a toast offering Find Players for a sport booking */
+function offerFindPlayers(booking) {
+  showToast('Need more players? Open Find Players from My Bookings!');
 }
 
 
@@ -657,7 +805,26 @@ async function loadDashboard() {
 }
 
 function renderDashboardBookings(bookings) {
-  dom.dashboardGrid.innerHTML = bookings.map(b => `
+  dom.dashboardGrid.innerHTML = bookings.map(b => {
+    // Find Players button — only for sport facilities without existing player requests
+    let findPlayersBtn = '';
+    if (b.is_sport) {
+      if (b.has_player_request) {
+        findPlayersBtn = `
+          <button class="btn-find-players btn-find-players--active" data-view-pr-id="${b.player_request_id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            View Game · ${b.player_request_status}
+          </button>`;
+      } else {
+        findPlayersBtn = `
+          <button class="btn-find-players" data-fp-booking-id="${b.id}" data-fp-facility="${b.facility_emoji} ${b.facility_name}" data-fp-date="${b.date}" data-fp-label="${b.label}" data-fp-start="${b.start_time}" data-fp-end="${b.end_time}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Find Players
+          </button>`;
+      }
+    }
+
+    return `
     <div class="booking-card" data-booking-id="${b.id}">
       <div class="booking-card__header">
         <div class="booking-card__facility">
@@ -681,12 +848,13 @@ function renderDashboardBookings(bookings) {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="21" y1="21" x2="21" y2="21.01"/><line x1="14" y1="21" x2="14" y2="21.01"/></svg>
           Gate Pass
         </button>
+        ${findPlayersBtn}
         <button class="btn btn-danger btn-sm" data-cancel-id="${b.id}">
           Cancel Booking
         </button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
   // Attach cancel handlers
   dom.dashboardGrid.querySelectorAll('[data-cancel-id]').forEach(btn => {
@@ -701,6 +869,27 @@ function renderDashboardBookings(bookings) {
       const dateStr   = btn.dataset.qrDate;
       const label     = btn.dataset.qrLabel;
       openQRModal(bookingId, facility, dateStr, label);
+    });
+  });
+
+  // Attach Find Players handlers
+  dom.dashboardGrid.querySelectorAll('[data-fp-booking-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openCreatePRModal({
+        id: parseInt(btn.dataset.fpBookingId, 10),
+        facility_name: btn.dataset.fpFacility,
+        date: btn.dataset.fpDate,
+        label: btn.dataset.fpLabel,
+        start_time: parseInt(btn.dataset.fpStart, 10),
+        end_time: parseInt(btn.dataset.fpEnd, 10)
+      });
+    });
+  });
+
+  // Attach View Player Request handlers
+  dom.dashboardGrid.querySelectorAll('[data-view-pr-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openGameDetailModal(parseInt(btn.dataset.viewPrId, 10));
     });
   });
 
@@ -786,11 +975,19 @@ function closeModal(overlay) {
     state.selectedSlot = null;
     if (state.activeUnit) renderSlots();
   }
+
+  // Reset join modal views
+  if (overlay === dom.joinGameModalOverlay) {
+    dom.joinConfirmView.style.display = 'block';
+    dom.joinSuccessView.style.display = 'none';
+  }
 }
 
 function closeAllModals() {
-  [dom.modalOverlay, dom.unitModalOverlay, dom.loginModalOverlay, dom.registerModalOverlay, dom.qrModalOverlay].forEach(m => {
-    m.classList.remove('visible');
+  [dom.modalOverlay, dom.unitModalOverlay, dom.loginModalOverlay, dom.registerModalOverlay,
+   dom.qrModalOverlay, dom.createPRModalOverlay, dom.joinGameModalOverlay,
+   dom.gameDetailModalOverlay, dom.editPRModalOverlay].forEach(m => {
+    if (m) m.classList.remove('visible');
   });
   document.body.style.overflow = '';
 }
@@ -820,7 +1017,6 @@ function showToastError(message) {
 // ─────────────────────────────────────────────
 //  3D ORB — Canvas Animated Background
 // ─────────────────────────────────────────────
-
 
 
 
@@ -910,7 +1106,7 @@ function initNavbarScroll() {
 
 /** Active nav link based on scroll position */
 function initActiveNavLink() {
-  const sections = ['hero', 'facilities', 'schedule', 'dashboard'];
+  const sections = ['hero', 'facilities', 'schedule', 'dashboard', 'findplayers'];
   const links = $$('.nav-link');
   const offset = 200;
 
@@ -941,6 +1137,537 @@ function initHamburger() {
       dom.hamburger.classList.remove('open');
       dom.navLinks.classList.remove('mobile-open');
     });
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  FIND PLAYERS — Discovery, Create, Join, My Games
+// ═══════════════════════════════════════════════════════════
+
+// ─── Open Find Players Page ───
+async function openFindPlayers() {
+  if (!state.user) {
+    openModalOverlay(dom.loginModalOverlay);
+    return;
+  }
+  dom.findPlayersSection.style.display = 'block';
+  switchFPTab('discover');
+  scrollToSection('findplayers');
+}
+
+// ─── Tab Switching ───
+function switchFPTab(tab) {
+  state.fpActiveTab = tab;
+  dom.fpTabDiscover.classList.toggle('active', tab === 'discover');
+  dom.fpTabMyGames.classList.toggle('active', tab === 'mygames');
+  dom.fpDiscoverView.style.display = tab === 'discover' ? 'block' : 'none';
+  dom.fpMyGamesView.style.display = tab === 'mygames' ? 'block' : 'none';
+
+  if (tab === 'discover') {
+    loadOpenGames();
+  } else {
+    loadMyGames();
+  }
+}
+
+// ─── Load Open Games (Discovery) ───
+async function loadOpenGames() {
+  const sport = dom.fpFilterSport.value;
+  const skill = dom.fpFilterSkill.value;
+  const dateVal = dom.fpFilterDate.value;
+
+  let url = '/api/player-requests?';
+  if (sport) url += `sport=${encodeURIComponent(sport)}&`;
+  if (skill) url += `skill=${encodeURIComponent(skill)}&`;
+  if (dateVal) url += `date=${encodeURIComponent(dateVal)}&`;
+
+  try {
+    const data = await API.get(url);
+    const requests = data.requests || [];
+    const sports = data.sports || [];
+
+    // Populate sport filter (preserve current value)
+    const currentSport = dom.fpFilterSport.value;
+    dom.fpFilterSport.innerHTML = '<option value="">All Sports</option>' +
+      sports.map(s => `<option value="${s}" ${s === currentSport ? 'selected' : ''}>${s}</option>`).join('');
+
+    // Populate date filter with upcoming dates
+    const dates = [...new Set(requests.map(r => r.date))].sort();
+    const currentDate = dom.fpFilterDate.value;
+    dom.fpFilterDate.innerHTML = '<option value="">All Dates</option>' +
+      dates.map(d => `<option value="${d}" ${d === currentDate ? 'selected' : ''}>${formatDateShort(d)}</option>`).join('');
+
+    renderGameCards(requests);
+  } catch (err) {
+    console.error('Failed to load open games:', err);
+    dom.fpGamesGrid.innerHTML = '<div class="fp-empty"><div class="fp-empty__icon">⚠️</div><h3>Failed to load games</h3><p>Please try again later.</p></div>';
+  }
+}
+
+function renderGameCards(requests) {
+  if (requests.length === 0) {
+    dom.fpGamesGrid.innerHTML = `
+      <div class="fp-empty">
+        <div class="fp-empty__icon">🏸</div>
+        <h3>No open games right now</h3>
+        <p>No open games match these filters. Check back later or create your own!</p>
+        <button class="fp-clear-filters" onclick="clearFPFilters()">Clear Filters</button>
+      </div>`;
+    return;
+  }
+
+  dom.fpGamesGrid.innerHTML = requests.map(r => {
+    const spotsClass = r.spots_remaining > 0 ? 'spots-indicator--open' : 'spots-indicator--full';
+    const spotsText = r.spots_remaining > 0 ? `${r.spots_remaining} spot${r.spots_remaining > 1 ? 's' : ''} left` : 'Game full';
+    const descHTML = r.description ? `<div class="game-card__description">"${r.description}"</div>` : '';
+
+    return `
+    <div class="game-card" data-request-id="${r.id}">
+      <div class="game-card__sport-badge">${r.facility_emoji} ${r.sport_name}</div>
+      <div class="game-card__facility">${r.facility_name}</div>
+      <div class="game-card__time-row">
+        <div class="game-card__time-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${formatDateShort(r.date)}
+        </div>
+        <div class="game-card__time-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${r.start_label} – ${r.end_label}
+        </div>
+      </div>
+      <div class="game-card__host">
+        <div class="game-card__host-avatar">${r.creator_name.charAt(0)}</div>
+        Hosted by <span class="game-card__host-name">${r.creator_name}</span>
+      </div>
+      <div class="game-card__meta-row">
+        <span class="skill-badge skill-badge--${r.skill_level}">${getSkillLabel(r.skill_level)}</span>
+        <span class="${spotsClass} spots-indicator">${spotsText}</span>
+      </div>
+      ${descHTML}
+      <div class="game-card__actions">
+        <button class="btn btn-primary btn-glow btn-sm" data-join-id="${r.id}" ${r.spots_remaining <= 0 ? 'disabled' : ''}>
+          <span>${r.spots_remaining > 0 ? 'Join Game' : 'Game Full'}</span>
+        </button>
+        <button class="btn btn-outline btn-sm" data-detail-id="${r.id}">Details</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Attach handlers
+  dom.fpGamesGrid.querySelectorAll('[data-join-id]').forEach(btn => {
+    btn.addEventListener('click', () => openJoinGameModal(parseInt(btn.dataset.joinId, 10)));
+  });
+  dom.fpGamesGrid.querySelectorAll('[data-detail-id]').forEach(btn => {
+    btn.addEventListener('click', () => openGameDetailModal(parseInt(btn.dataset.detailId, 10)));
+  });
+
+  // Animate
+  requestAnimationFrame(() => {
+    if (window.gsap) {
+      gsap.fromTo('.game-card',
+        { opacity: 0, y: 20, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, stagger: 0.08, duration: 0.5, ease: 'power3.out' }
+      );
+    }
+  });
+}
+
+function clearFPFilters() {
+  dom.fpFilterSport.value = '';
+  dom.fpFilterSkill.value = '';
+  dom.fpFilterDate.value = '';
+  loadOpenGames();
+}
+
+// ─── Create Player Request ───
+function openCreatePRModal(bookingData) {
+  state.fpCreateBookingId = bookingData.id;
+  state.fpCreateBookingData = bookingData;
+
+  dom.prBookingItems.innerHTML = `
+    <div class="fp-booking-summary__item"><strong>Facility:</strong> ${bookingData.facility_name}</div>
+    <div class="fp-booking-summary__item"><strong>Date:</strong> ${formatDate(bookingData.date)}</div>
+    <div class="fp-booking-summary__item"><strong>Time:</strong> ${bookingData.label}</div>
+  `;
+
+  dom.prPlayersNeeded.value = 1;
+  dom.prSkillLevel.value = 'any';
+  dom.prDescription.value = '';
+  dom.prCharCounter.textContent = '0 / 300';
+  dom.prError.style.display = 'none';
+
+  openModalOverlay(dom.createPRModalOverlay);
+}
+
+async function handleCreatePR(e) {
+  e.preventDefault();
+  dom.prError.style.display = 'none';
+
+  const players_needed = parseInt(dom.prPlayersNeeded.value, 10);
+  const skill_level = dom.prSkillLevel.value;
+  const description = dom.prDescription.value.trim();
+
+  if (!players_needed || players_needed < 1) {
+    showFormError(dom.prError, 'Players needed must be at least 1.');
+    return;
+  }
+
+  const data = await API.post('/api/player-requests', {
+    booking_id: state.fpCreateBookingId,
+    players_needed,
+    skill_level,
+    description
+  });
+
+  if (data._status === 201) {
+    closeModal(dom.createPRModalOverlay);
+    showToast('Player request published!');
+    loadDashboard();
+  } else {
+    showFormError(dom.prError, data.error || 'Failed to create player request.');
+  }
+}
+
+// ─── Join Game ───
+async function openJoinGameModal(requestId) {
+  if (!state.user) {
+    openModalOverlay(dom.loginModalOverlay);
+    return;
+  }
+
+  state.fpJoiningRequestId = requestId;
+
+  // Fetch request details
+  try {
+    const data = await API.get(`/api/player-requests/${requestId}`);
+    if (data.error) {
+      showToastError(data.error);
+      return;
+    }
+    state.fpJoiningData = data.request;
+
+    dom.joinGameMeta.textContent = `${data.request.facility_emoji} ${data.request.facility_name}`;
+    dom.joinGameDetails.innerHTML = `
+      <div class="game-detail-info">
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Sport</div>
+          <div class="game-detail-item__value">${data.request.sport_name}</div>
+        </div>
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Date</div>
+          <div class="game-detail-item__value">${formatDateShort(data.request.date)}</div>
+        </div>
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Time</div>
+          <div class="game-detail-item__value">${data.request.start_label} – ${data.request.end_label}</div>
+        </div>
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Host</div>
+          <div class="game-detail-item__value">${data.request.creator_name}</div>
+        </div>
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Skill Level</div>
+          <div class="game-detail-item__value">${getSkillLabel(data.request.skill_level)}</div>
+        </div>
+        <div class="game-detail-item">
+          <div class="game-detail-item__label">Spots</div>
+          <div class="game-detail-item__value">${data.request.spots_remaining} remaining</div>
+        </div>
+      </div>`;
+
+    dom.joinConfirmView.style.display = 'block';
+    dom.joinSuccessView.style.display = 'none';
+    openModalOverlay(dom.joinGameModalOverlay);
+  } catch (err) {
+    showToastError('Failed to load game details.');
+  }
+}
+
+async function handleJoinConfirm() {
+  if (!state.fpJoiningRequestId) return;
+
+  dom.btnConfirmJoin.disabled = true;
+  dom.btnConfirmJoin.querySelector('span').textContent = 'Joining...';
+
+  const data = await API.post(`/api/player-requests/${state.fpJoiningRequestId}/join`, {});
+
+  dom.btnConfirmJoin.disabled = false;
+  dom.btnConfirmJoin.querySelector('span').textContent = 'Confirm Join';
+
+  if (data._status === 200) {
+    // Show success view
+    const r = state.fpJoiningData;
+    dom.joinSuccessDetails.textContent = `${r.facility_name} · ${formatDateShort(r.date)} · ${r.start_label}`;
+    dom.joinConfirmView.style.display = 'none';
+    dom.joinSuccessView.style.display = 'block';
+
+    // Refresh discovery
+    if (state.fpActiveTab === 'discover') loadOpenGames();
+  } else {
+    closeModal(dom.joinGameModalOverlay);
+    showToastError(data.error || 'Failed to join game.');
+    loadOpenGames();
+  }
+}
+
+// ─── Game Details Modal ───
+async function openGameDetailModal(requestId) {
+  try {
+    const data = await API.get(`/api/player-requests/${requestId}`);
+    if (data.error) {
+      showToastError(data.error);
+      return;
+    }
+
+    const r = data.request;
+    const members = data.members || [];
+    const isHost = data.is_host;
+    const isMember = data.is_member;
+
+    const membersHTML = members.length > 0
+      ? `<div class="members-list">
+          ${members.map(m => `
+            <div class="member-row">
+              <div class="member-row__avatar">${m.name.charAt(0)}</div>
+              <span class="member-row__name">${m.name}</span>
+              ${m.user_id === r.creator_user_id ? '<span class="member-row__badge">Host</span>' : ''}
+            </div>
+          `).join('')}
+         </div>`
+      : '<p style="color:var(--text-muted); font-size:0.85rem;">No players have joined yet.</p>';
+
+    let actionsHTML = '';
+    if (isHost) {
+      actionsHTML = `
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          ${r.status === 'OPEN' || r.status === 'FILLED' ? `<button class="btn btn-outline btn-sm" id="gdEditBtn" data-pr-id="${r.id}">Edit Request</button>` : ''}
+          ${r.status === 'OPEN' || r.status === 'FILLED' ? `<button class="btn btn-danger btn-sm" id="gdCloseBtn" data-pr-id="${r.id}">Close Request</button>` : ''}
+        </div>`;
+    } else if (isMember) {
+      actionsHTML = `
+        <div style="margin-top:20px;">
+          <button class="btn btn-danger btn-sm" id="gdLeaveBtn" data-pr-id="${r.id}">Leave Game</button>
+        </div>`;
+    } else if (r.status === 'OPEN' && r.spots_remaining > 0) {
+      actionsHTML = `
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary btn-glow btn-sm" id="gdJoinBtn" data-pr-id="${r.id}">Join Game</button>
+        </div>`;
+    }
+
+    const statusClass = `status-badge--${r.status.toLowerCase()}`;
+    const descHTML = r.description ? `
+      <div class="game-detail-section">
+        <div class="game-detail-section__title">Message from Host</div>
+        <div class="game-card__description">"${r.description}"</div>
+      </div>` : '';
+
+    dom.gameDetailContent.innerHTML = `
+      <div class="modal-header">
+        <span class="modal-icon">${r.facility_emoji}</span>
+        <h3 id="gameDetailTitle">${r.sport_name}</h3>
+        <p class="modal-meta">${r.facility_name}</p>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+        <span class="status-badge ${statusClass}">${r.status}</span>
+        <span class="skill-badge skill-badge--${r.skill_level}">${getSkillLabel(r.skill_level)}</span>
+        <span class="spots-indicator ${r.spots_remaining > 0 ? 'spots-indicator--open' : 'spots-indicator--full'}">
+          ${r.spots_remaining > 0 ? r.spots_remaining + ' spot' + (r.spots_remaining > 1 ? 's' : '') + ' left' : 'Game full'}
+        </span>
+      </div>
+
+      <div class="game-detail-section">
+        <div class="game-detail-section__title">Game Info</div>
+        <div class="game-detail-info">
+          <div class="game-detail-item">
+            <div class="game-detail-item__label">Date</div>
+            <div class="game-detail-item__value">${formatDateShort(r.date)}</div>
+          </div>
+          <div class="game-detail-item">
+            <div class="game-detail-item__label">Time</div>
+            <div class="game-detail-item__value">${r.start_label} – ${r.end_label}</div>
+          </div>
+          <div class="game-detail-item">
+            <div class="game-detail-item__label">Host</div>
+            <div class="game-detail-item__value">${r.creator_name}</div>
+          </div>
+          <div class="game-detail-item">
+            <div class="game-detail-item__label">Players</div>
+            <div class="game-detail-item__value">${r.joined_count} / ${r.players_needed}</div>
+          </div>
+        </div>
+      </div>
+
+      ${descHTML}
+
+      <div class="game-detail-section">
+        <div class="game-detail-section__title">Players (${r.joined_count})</div>
+        ${membersHTML}
+      </div>
+
+      ${actionsHTML}
+    `;
+
+    openModalOverlay(dom.gameDetailModalOverlay);
+
+    // Attach action handlers after rendering
+    const editBtn = document.getElementById('gdEditBtn');
+    const closeBtn = document.getElementById('gdCloseBtn');
+    const leaveBtn = document.getElementById('gdLeaveBtn');
+    const joinBtn = document.getElementById('gdJoinBtn');
+
+    if (editBtn) editBtn.addEventListener('click', () => {
+      closeModal(dom.gameDetailModalOverlay);
+      openEditPRModal(r);
+    });
+    if (closeBtn) closeBtn.addEventListener('click', async () => {
+      if (!confirm('Close this player request? It will no longer appear in discovery.')) return;
+      const res = await API.post(`/api/player-requests/${r.id}/close`, {});
+      if (res._status === 200) {
+        closeModal(dom.gameDetailModalOverlay);
+        showToast('Player request closed.');
+        loadOpenGames();
+        if (state.fpActiveTab === 'mygames') loadMyGames();
+      } else {
+        showToastError(res.error || 'Failed to close request.');
+      }
+    });
+    if (leaveBtn) leaveBtn.addEventListener('click', async () => {
+      if (!confirm('Leave this game? Your spot will become available to another resident.')) return;
+      const res = await API.post(`/api/player-requests/${r.id}/leave`, {});
+      if (res._status === 200) {
+        closeModal(dom.gameDetailModalOverlay);
+        showToast('You have left the game.');
+        loadOpenGames();
+        if (state.fpActiveTab === 'mygames') loadMyGames();
+      } else {
+        showToastError(res.error || 'Failed to leave game.');
+      }
+    });
+    if (joinBtn) joinBtn.addEventListener('click', () => {
+      closeModal(dom.gameDetailModalOverlay);
+      openJoinGameModal(r.id);
+    });
+
+  } catch (err) {
+    console.error('Failed to load game details:', err);
+    showToastError('Failed to load game details.');
+  }
+}
+
+// ─── Edit Player Request ───
+function openEditPRModal(requestData) {
+  dom.editPRId.value = requestData.id;
+  dom.editPRPlayersNeeded.value = requestData.players_needed;
+  dom.editPRSkillLevel.value = requestData.skill_level;
+  dom.editPRDescription.value = requestData.description || '';
+  dom.editPRCharCounter.textContent = `${(requestData.description || '').length} / 300`;
+  dom.editPRError.style.display = 'none';
+  openModalOverlay(dom.editPRModalOverlay);
+}
+
+async function handleEditPR(e) {
+  e.preventDefault();
+  dom.editPRError.style.display = 'none';
+
+  const id = parseInt(dom.editPRId.value, 10);
+  const players_needed = parseInt(dom.editPRPlayersNeeded.value, 10);
+  const skill_level = dom.editPRSkillLevel.value;
+  const description = dom.editPRDescription.value.trim();
+
+  const data = await API.put(`/api/player-requests/${id}`, {
+    players_needed,
+    skill_level,
+    description
+  });
+
+  if (data._status === 200) {
+    closeModal(dom.editPRModalOverlay);
+    showToast('Player request updated.');
+    loadOpenGames();
+    if (state.fpActiveTab === 'mygames') loadMyGames();
+  } else {
+    showFormError(dom.editPRError, data.error || 'Failed to update request.');
+  }
+}
+
+// ─── My Games ───
+async function loadMyGames() {
+  try {
+    const data = await API.get('/api/player-requests/my-games');
+    const hosted = data.hosted || [];
+    const joined = data.joined || [];
+
+    renderMyGames(state.fpMyGamesTab === 'hosted' ? hosted : joined, state.fpMyGamesTab);
+  } catch (err) {
+    console.error('Failed to load my games:', err);
+  }
+}
+
+function renderMyGames(games, type) {
+  if (games.length === 0) {
+    dom.fpMyGamesGrid.innerHTML = `
+      <div class="fp-empty">
+        <div class="fp-empty__icon">${type === 'hosted' ? '🏆' : '🎮'}</div>
+        <h3>${type === 'hosted' ? 'No hosted games' : 'No joined games'}</h3>
+        <p>${type === 'hosted' ? 'Create a player request from your sports bookings.' : 'Browse open games and join one!'}</p>
+      </div>`;
+    return;
+  }
+
+  dom.fpMyGamesGrid.innerHTML = games.map(g => {
+    const statusClass = `status-badge--${g.status.toLowerCase()}`;
+    const hostInfo = type === 'joined' ? `
+      <div class="game-card__host">
+        <div class="game-card__host-avatar">${g.creator_name.charAt(0)}</div>
+        Hosted by <span class="game-card__host-name">${g.creator_name}</span>
+      </div>` : '';
+
+    return `
+    <div class="game-card" data-request-id="${g.id}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div class="game-card__sport-badge">${g.facility_emoji} ${g.sport_name}</div>
+        <span class="status-badge ${statusClass}">${g.status}</span>
+      </div>
+      <div class="game-card__facility">${g.facility_name}</div>
+      <div class="game-card__time-row">
+        <div class="game-card__time-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${formatDateShort(g.date)}
+        </div>
+        <div class="game-card__time-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${g.start_label} – ${g.end_label}
+        </div>
+      </div>
+      ${hostInfo}
+      <div class="game-card__meta-row">
+        <span class="skill-badge skill-badge--${g.skill_level}">${getSkillLabel(g.skill_level)}</span>
+        <span class="spots-indicator ${g.spots_remaining > 0 ? 'spots-indicator--open' : 'spots-indicator--full'}">
+          ${g.joined_count} / ${g.players_needed} players
+        </span>
+      </div>
+      <div class="game-card__actions">
+        <button class="btn btn-outline btn-sm" data-detail-id="${g.id}">View Details</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Attach handlers
+  dom.fpMyGamesGrid.querySelectorAll('[data-detail-id]').forEach(btn => {
+    btn.addEventListener('click', () => openGameDetailModal(parseInt(btn.dataset.detailId, 10)));
+  });
+
+  // Animate
+  requestAnimationFrame(() => {
+    if (window.gsap) {
+      gsap.fromTo('.my-games-grid .game-card',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: 'power3.out' }
+      );
+    }
   });
 }
 
@@ -982,6 +1709,10 @@ function bindEvents() {
     if (e.target === dom.registerModalOverlay) closeModal(dom.registerModalOverlay);
   });
   dom.registerForm.addEventListener('submit', handleRegister);
+
+  // Google Sign-In buttons (both modals use the same handler)
+  document.getElementById('btnGoogleLogin').addEventListener('click', handleGoogleAuth);
+  document.getElementById('btnGoogleRegister').addEventListener('click', handleGoogleAuth);
 
   // QR Gate Pass modal
   dom.qrModalClose.addEventListener('click', () => {
@@ -1038,6 +1769,80 @@ function bindEvents() {
   dom.navDashboardLink.querySelector('a').addEventListener('click', (e) => {
     e.preventDefault();
     loadDashboard();
+  });
+
+  // Find Players nav link
+  dom.navFindPlayersLink.querySelector('a').addEventListener('click', (e) => {
+    e.preventDefault();
+    dom.hamburger.classList.remove('open');
+    dom.navLinks.classList.remove('mobile-open');
+    openFindPlayers();
+  });
+
+  // ─── Find Players Events ───
+  dom.fpTabDiscover.addEventListener('click', () => switchFPTab('discover'));
+  dom.fpTabMyGames.addEventListener('click', () => switchFPTab('mygames'));
+
+  // My Games sub-tabs
+  dom.fpMgHosted.addEventListener('click', () => {
+    state.fpMyGamesTab = 'hosted';
+    dom.fpMgHosted.classList.add('active');
+    dom.fpMgJoined.classList.remove('active');
+    loadMyGames();
+  });
+  dom.fpMgJoined.addEventListener('click', () => {
+    state.fpMyGamesTab = 'joined';
+    dom.fpMgJoined.classList.add('active');
+    dom.fpMgHosted.classList.remove('active');
+    loadMyGames();
+  });
+
+  // Filters
+  dom.fpFilterSport.addEventListener('change', loadOpenGames);
+  dom.fpFilterSkill.addEventListener('change', loadOpenGames);
+  dom.fpFilterDate.addEventListener('change', loadOpenGames);
+  dom.fpClearFilters.addEventListener('click', clearFPFilters);
+
+  // Create Player Request modal
+  dom.createPRModalClose.addEventListener('click', () => closeModal(dom.createPRModalOverlay));
+  dom.createPRModalOverlay.addEventListener('click', (e) => {
+    if (e.target === dom.createPRModalOverlay) closeModal(dom.createPRModalOverlay);
+  });
+  dom.createPRForm.addEventListener('submit', handleCreatePR);
+  dom.prDescription.addEventListener('input', () => {
+    dom.prCharCounter.textContent = `${dom.prDescription.value.length} / 300`;
+  });
+
+  // Join Game modal
+  dom.joinGameModalClose.addEventListener('click', () => closeModal(dom.joinGameModalOverlay));
+  dom.joinGameModalOverlay.addEventListener('click', (e) => {
+    if (e.target === dom.joinGameModalOverlay) closeModal(dom.joinGameModalOverlay);
+  });
+  dom.btnConfirmJoin.addEventListener('click', handleJoinConfirm);
+  dom.btnCancelJoin.addEventListener('click', () => closeModal(dom.joinGameModalOverlay));
+  dom.btnViewGameAfterJoin.addEventListener('click', () => {
+    closeModal(dom.joinGameModalOverlay);
+    if (state.fpJoiningRequestId) openGameDetailModal(state.fpJoiningRequestId);
+  });
+  dom.btnViewBookingsAfterJoin.addEventListener('click', () => {
+    closeModal(dom.joinGameModalOverlay);
+    loadDashboard();
+  });
+
+  // Game Detail modal
+  dom.gameDetailModalClose.addEventListener('click', () => closeModal(dom.gameDetailModalOverlay));
+  dom.gameDetailModalOverlay.addEventListener('click', (e) => {
+    if (e.target === dom.gameDetailModalOverlay) closeModal(dom.gameDetailModalOverlay);
+  });
+
+  // Edit PR modal
+  dom.editPRModalClose.addEventListener('click', () => closeModal(dom.editPRModalOverlay));
+  dom.editPRModalOverlay.addEventListener('click', (e) => {
+    if (e.target === dom.editPRModalOverlay) closeModal(dom.editPRModalOverlay);
+  });
+  dom.editPRForm.addEventListener('submit', handleEditPR);
+  dom.editPRDescription.addEventListener('input', () => {
+    dom.editPRCharCounter.textContent = `${dom.editPRDescription.value.length} / 300`;
   });
 
   // Global Escape key
@@ -1106,9 +1911,28 @@ function initLiveSlots() {
       try {
         const data = JSON.parse(event.data);
         if (data.updated) {
-          // Only re-fetch if the schedule view is currently visible
+          // Re-fetch slots if schedule view is visible
           if (dom.scheduleHeader && dom.scheduleHeader.style.display !== 'none' && state.activeUnit) {
             fetchAndRenderSlots();
+          }
+
+          // Handle player request SSE events
+          if (data.type === 'player_request') {
+            // Refresh find players page if visible
+            if (dom.findPlayersSection && dom.findPlayersSection.style.display !== 'none') {
+              if (state.fpActiveTab === 'discover') {
+                loadOpenGames();
+              } else {
+                loadMyGames();
+              }
+            }
+          }
+
+          // If a booking was cancelled, refresh dashboard if visible
+          if (data.type === 'booking_cancelled') {
+            if (dom.dashboardSection && dom.dashboardSection.style.display !== 'none') {
+              loadDashboard();
+            }
           }
         }
       } catch (err) {
@@ -1158,3 +1982,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Expose scroll function globally for inline onclick handlers
 window.scrollToSection = scrollToSection;
+window.clearFPFilters = clearFPFilters;

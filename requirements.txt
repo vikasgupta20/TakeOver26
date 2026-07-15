@@ -2,3 +2,5 @@ flask>=3.0
 flask-bcrypt>=1.0
 qrcode[pil]>=7.0
 gunicorn
+google-auth>=2.0
+requests>=2.0

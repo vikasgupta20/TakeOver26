@@ -318,6 +318,65 @@
         <p>There are no confirmed reservations for the selected date.</p>
       </div>
 
+      <!-- ═══════════════════════════════════════════
+           COMMUNITY GAMES (Player Requests)
+      ═══════════════════════════════════════════ -->
+      <div style="margin-top:48px;">
+        <div class="admin-header">
+          <div class="admin-header-left">
+            <p class="section-eyebrow">Community</p>
+            <h2 class="section-title" style="font-size:1.6rem;">Player <span class="gradient-text">Requests</span></h2>
+          </div>
+        </div>
+
+        <!-- Player Request Stats -->
+        <div class="admin-stats" id="adminPRStats">
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__value" id="prStatOpen">0</div>
+            <div class="admin-stat-card__label">Open Games</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__value" id="prStatFilled">0</div>
+            <div class="admin-stat-card__label">Filled Games</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__value" id="prStatJoined">0</div>
+            <div class="admin-stat-card__label">Residents Joined</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__value" id="prStatSport" style="font-size:1.2rem;">—</div>
+            <div class="admin-stat-card__label">Most Active Sport</div>
+          </div>
+        </div>
+
+        <!-- Player Request Table -->
+        <div class="admin-table-wrap" id="adminPRTableWrap">
+          <table class="admin-table" id="adminPRTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sport</th>
+                <th>Host</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Players</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminPRTableBody">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="admin-empty" id="adminPREmpty" style="display:none;">
+          <div class="admin-empty-icon">🏸</div>
+          <h3>No Player Requests</h3>
+          <p>No community games have been created yet.</p>
+        </div>
+      </div>
+
     </div>
   </div>
 

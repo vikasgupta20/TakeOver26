@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlexSpace — Live. Play. Connect.</title>
+  <meta name="description" content="A smart community platform that simplifies sports booking, community events and visitor experiences. Book world-class facilities in your gated community." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="landing.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAVIGATION
+  ═══════════════════════════════════════════ -->
+  <nav class="lp-nav" id="lpNav">
+    <div class="lp-nav-inner">
+      <a href="/" class="lp-logo" aria-label="FlexSpace Home">
+        <span class="lp-logo-icon">◈</span>
+        <span class="lp-logo-text">Flex<span class="lp-logo-highlight">Space</span></span>
+      </a>
+      <div class="lp-nav-links">
+        <a href="#amenities" class="lp-nav-link">Amenities</a>
+        <a href="#community" class="lp-nav-link">Community</a>
+        <a href="#features" class="lp-nav-link">Features</a>
+      </div>
+      <a href="/app" class="lp-nav-cta">
+        Get Started
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <button class="lp-hamburger" id="lpHamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="lp-mobile-menu" id="lpMobileMenu">
+    <a href="#amenities" class="lp-mobile-link">Amenities</a>
+    <a href="#community" class="lp-mobile-link">Community</a>
+    <a href="#features" class="lp-mobile-link">Features</a>
+    <a href="/app" class="lp-mobile-link lp-mobile-cta">Get Started →</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       HERO SECTION
+  ═══════════════════════════════════════════ -->
+  <section class="lp-hero" id="hero">
+    <!-- Animated background shapes -->
+    <div class="lp-hero-bg" aria-hidden="true">
+      <div class="lp-orb lp-orb-1"></div>
+      <div class="lp-orb lp-orb-2"></div>
+      <div class="lp-orb lp-orb-3"></div>
+      <div class="lp-grid-overlay"></div>
+    </div>
+
+    <div class="lp-hero-content">
+      <p class="lp-hero-eyebrow lp-reveal" data-delay="0">
+        <span class="lp-eyebrow-dot"></span>
+        Premium Community Platform
+      </p>
+      <h1 class="lp-hero-title lp-reveal" data-delay="1">
+        Live. Play.<br/><span class="lp-gradient-text">Connect.</span>
+      </h1>
+      <p class="lp-hero-subtitle lp-reveal" data-delay="2">
+        A smart community platform that simplifies sports booking,<br class="lp-br-desktop" />
+        community events and visitor experiences.
+      </p>
+      <div class="lp-hero-actions lp-reveal" data-delay="3">
+        <a href="/explore" class="lp-btn lp-btn-primary">
+          <span>Explore Community</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <a href="/app#facilities" class="lp-btn lp-btn-outline">
+          <span>Book a Game</span>
+        </a>
+      </div>
+
+      <!-- Trust bar -->
+      <div class="lp-hero-stats lp-reveal" data-delay="4">
+        <div class="lp-stat">
+          <span class="lp-stat-number" data-count="150">0</span>
+          <span class="lp-stat-label">Happy Residents</span>
+        </div>
+        <div class="lp-stat-divider"></div>
+        <div class="lp-stat">
+          <span class="lp-stat-number" data-count="10">0</span>
+          <span class="lp-stat-label">Premium Facilities</span>
+        </div>
+        <div class="lp-stat-divider"></div>
+        <div class="lp-stat">
+          <span class="lp-stat-number" data-count="500">0</span>
+          <span class="lp-stat-label">Bookings Made</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="lp-scroll-indicator lp-reveal" data-delay="5">
+      <div class="lp-scroll-mouse">
+        <div class="lp-scroll-wheel"></div>
+      </div>
+      <span>Scroll to explore</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       AMENITIES SHOWCASE
+  ═══════════════════════════════════════════ -->
+  <section class="lp-section lp-amenities" id="amenities">
+    <div class="lp-container">
+      <p class="lp-eyebrow lp-scroll-reveal">Our Spaces</p>
+      <h2 class="lp-section-title lp-scroll-reveal">World-Class <span class="lp-gradient-text">Amenities</span></h2>
+      <p class="lp-section-subtitle lp-scroll-reveal">Everything you need for an active, connected lifestyle — right at your doorstep.</p>
+
+      <div class="lp-amenities-grid">
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="0">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #a855f7;">
+            <span class="lp-amenity-icon">🏸</span>
+          </div>
+          <h3 class="lp-amenity-name">Badminton</h3>
+          <p class="lp-amenity-desc">Professional indoor courts with premium flooring and LED scoreboards.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="1">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #3b82f6;">
+            <span class="lp-amenity-icon">🏏</span>
+          </div>
+          <h3 class="lp-amenity-name">Box Cricket</h3>
+          <p class="lp-amenity-desc">Enclosed turf pitch with protective netting and floodlights.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="2">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #f97316;">
+            <span class="lp-amenity-icon">🏀</span>
+          </div>
+          <h3 class="lp-amenity-name">Basketball</h3>
+          <p class="lp-amenity-desc">Full-size hardwood court with professional hoops and scoring.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="3">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #14b8a6;">
+            <span class="lp-amenity-icon">🏐</span>
+          </div>
+          <h3 class="lp-amenity-name">Volleyball</h3>
+          <p class="lp-amenity-desc">Outdoor sand court with regulation net and spectator seating.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="4">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #6366f1;">
+            <span class="lp-amenity-icon">🏓</span>
+          </div>
+          <h3 class="lp-amenity-name">Table Tennis</h3>
+          <p class="lp-amenity-desc">Climate-controlled facility with competition-grade tables.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="5">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #e11d48;">
+            <span class="lp-amenity-icon">🎱</span>
+          </div>
+          <h3 class="lp-amenity-name">Snooker</h3>
+          <p class="lp-amenity-desc">Elegant lounge with full-size tables and ambient lighting.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="6">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #84cc16;">
+            <span class="lp-amenity-icon">🥒</span>
+          </div>
+          <h3 class="lp-amenity-name">Pickleball</h3>
+          <p class="lp-amenity-desc">Dedicated outdoor court with regulation markings and lighting.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="7">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #06b6d4;">
+            <span class="lp-amenity-icon">🏊</span>
+          </div>
+          <h3 class="lp-amenity-name">Swimming Pool</h3>
+          <p class="lp-amenity-desc">Temperature-controlled infinity pool with dedicated lap lanes.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="8">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #f43f5e;">
+            <span class="lp-amenity-icon">💪</span>
+          </div>
+          <h3 class="lp-amenity-name">Gym</h3>
+          <p class="lp-amenity-desc">State-of-the-art fitness center with premium equipment.</p>
+        </div>
+
+        <div class="lp-amenity-card lp-scroll-reveal" data-stagger="9">
+          <div class="lp-amenity-icon-wrap" style="--card-accent: #eab308;">
+            <span class="lp-amenity-icon">🏛️</span>
+          </div>
+          <h3 class="lp-amenity-name">Club House</h3>
+          <p class="lp-amenity-desc">Premium venue for events, gatherings and celebrations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       COMMUNITY LIFE
+  ═══════════════════════════════════════════ -->
+  <section class="lp-section lp-community" id="community">
+    <div class="lp-container">
+      <p class="lp-eyebrow lp-scroll-reveal">Life at FlexSpace</p>
+      <h2 class="lp-section-title lp-scroll-reveal">Community <span class="lp-gradient-text">Life</span></h2>
+      <p class="lp-section-subtitle lp-scroll-reveal">Where neighbors become friends and every day brings something new.</p>
+    </div>
+
+    <div class="lp-gallery-wrapper">
+      <div class="lp-gallery-track" id="galleryTrack">
+        <!-- Row 1 -->
+        <div class="lp-gallery-card" style="--g1: #a855f7; --g2: #6366f1;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🏆</span>
+          <div class="lp-gallery-text">
+            <h4>Annual Sports Tournament</h4>
+            <p>150+ residents competing across 6 sports</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #f97316; --g2: #eab308;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🪔</span>
+          <div class="lp-gallery-text">
+            <h4>Diwali Celebration</h4>
+            <p>Lights, music and community togetherness</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #14b8a6; --g2: #3b82f6;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🏏</span>
+          <div class="lp-gallery-text">
+            <h4>Cricket League Finals</h4>
+            <p>The most awaited community event of the year</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #e11d48; --g2: #a855f7;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🎉</span>
+          <div class="lp-gallery-text">
+            <h4>Community Fest</h4>
+            <p>Food, fun and entertainment for all ages</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #6366f1; --g2: #06b6d4;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🧒</span>
+          <div class="lp-gallery-text">
+            <h4>Kids Summer Camp</h4>
+            <p>Sports, arts and adventure for young residents</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #84cc16; --g2: #14b8a6;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🧘</span>
+          <div class="lp-gallery-text">
+            <h4>Yoga Mornings</h4>
+            <p>Start your day with wellness and community</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #f43f5e; --g2: #f97316;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🎵</span>
+          <div class="lp-gallery-text">
+            <h4>Music Night</h4>
+            <p>Live performances under the stars</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #3b82f6; --g2: #a855f7;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🏃</span>
+          <div class="lp-gallery-text">
+            <h4>Marathon Day</h4>
+            <p>Fitness and spirit, all in one morning</p>
+          </div>
+        </div>
+        <!-- Duplicate for seamless loop -->
+        <div class="lp-gallery-card" style="--g1: #a855f7; --g2: #6366f1;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🏆</span>
+          <div class="lp-gallery-text">
+            <h4>Annual Sports Tournament</h4>
+            <p>150+ residents competing across 6 sports</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #f97316; --g2: #eab308;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🪔</span>
+          <div class="lp-gallery-text">
+            <h4>Diwali Celebration</h4>
+            <p>Lights, music and community togetherness</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #14b8a6; --g2: #3b82f6;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🏏</span>
+          <div class="lp-gallery-text">
+            <h4>Cricket League Finals</h4>
+            <p>The most awaited community event of the year</p>
+          </div>
+        </div>
+        <div class="lp-gallery-card" style="--g1: #e11d48; --g2: #a855f7;">
+          <div class="lp-gallery-overlay"></div>
+          <span class="lp-gallery-emoji">🎉</span>
+          <div class="lp-gallery-text">
+            <h4>Community Fest</h4>
+            <p>Food, fun and entertainment for all ages</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       WHY FLEXSPACE
+  ═══════════════════════════════════════════ -->
+  <section class="lp-section lp-features" id="features">
+    <div class="lp-container">
+      <p class="lp-eyebrow lp-scroll-reveal">Why Us</p>
+      <h2 class="lp-section-title lp-scroll-reveal">Why <span class="lp-gradient-text">FlexSpace</span>?</h2>
+      <p class="lp-section-subtitle lp-scroll-reveal">The smart way to manage, book and enjoy your community.</p>
+
+      <div class="lp-features-grid">
+        <div class="lp-feature-card lp-scroll-reveal" data-stagger="0">
+          <div class="lp-feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+          </div>
+          <h3 class="lp-feature-title">Smart Booking</h3>
+          <p class="lp-feature-desc">Book courts, pools and facilities in seconds. Real-time availability with instant confirmation.</p>
+        </div>
+
+        <div class="lp-feature-card lp-scroll-reveal" data-stagger="1">
+          <div class="lp-feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7z"/><path d="M14 7h3v3h-3z"/><path d="M7 14h3v3H7z"/><rect x="14" y="14" width="3" height="3"/></svg>
+          </div>
+          <h3 class="lp-feature-title">QR Entry</h3>
+          <p class="lp-feature-desc">Contactless entry with digital gate passes. Scan, verify and go — zero paperwork needed.</p>
+        </div>
+
+        <div class="lp-feature-card lp-scroll-reveal" data-stagger="2">
+          <div class="lp-feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          </div>
+          <h3 class="lp-feature-title">Find Players</h3>
+          <p class="lp-feature-desc">Connect with neighbors for pickup games. Post requests, join matches and build your crew.</p>
+        </div>
+
+        <div class="lp-feature-card lp-scroll-reveal" data-stagger="3">
+          <div class="lp-feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/></svg>
+          </div>
+          <h3 class="lp-feature-title">Community Events</h3>
+          <p class="lp-feature-desc">Stay in the loop with tournaments, festivals and activities. Never miss what's happening.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       CTA BANNER
+  ═══════════════════════════════════════════ -->
+  <section class="lp-cta-banner lp-scroll-reveal">
+    <div class="lp-container">
+      <div class="lp-cta-inner">
+        <h2 class="lp-cta-title">Ready to experience <span class="lp-gradient-text">premium living</span>?</h2>
+        <p class="lp-cta-subtitle">Join your community on FlexSpace today.</p>
+        <a href="/app" class="lp-btn lp-btn-primary lp-btn-lg">
+          <span>Get Started — It's Free</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="lp-footer">
+    <div class="lp-container">
+      <div class="lp-footer-grid">
+        <div class="lp-footer-brand">
+          <a href="/" class="lp-logo">
+            <span class="lp-logo-icon">◈</span>
+            <span class="lp-logo-text">Flex<span class="lp-logo-highlight">Space</span></span>
+          </a>
+          <p class="lp-footer-tagline">Premium community living, redefined.</p>
+        </div>
+        <div class="lp-footer-col">
+          <h4 class="lp-footer-heading">Platform</h4>
+          <a href="/app#facilities" class="lp-footer-link">Book Facilities</a>
+          <a href="/app#findplayers" class="lp-footer-link">Find Players</a>
+          <a href="/admin" class="lp-footer-link">Admin Dashboard</a>
+        </div>
+        <div class="lp-footer-col">
+          <h4 class="lp-footer-heading">Amenities</h4>
+          <a href="#amenities" class="lp-footer-link">Badminton</a>
+          <a href="#amenities" class="lp-footer-link">Basketball</a>
+          <a href="#amenities" class="lp-footer-link">Swimming Pool</a>
+        </div>
+        <div class="lp-footer-col">
+          <h4 class="lp-footer-heading">Community</h4>
+          <a href="#community" class="lp-footer-link">Events</a>
+          <a href="#community" class="lp-footer-link">Tournaments</a>
+          <a href="#community" class="lp-footer-link">Activities</a>
+        </div>
+      </div>
+      <div class="lp-footer-bottom">
+        <p>© 2026 FlexSpace. Crafted for premium communities.</p>
+        <div class="lp-footer-socials">
+          <a href="#" class="lp-social" aria-label="Twitter">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="lp-social" aria-label="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="lp-social" aria-label="LinkedIn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="landing.js"></script>
+</body>
+</html>

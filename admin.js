@@ -12,11 +12,22 @@ const API = {
     const data = await res.json();
     data._status = res.status;
     return data;
+  },
+  async post(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body || {})
+    });
+    const data = await res.json();
+    data._status = res.status;
+    return data;
   }
 };
 
 // ─── State ───
-let currentDate = "";
+let currentDate = new Date().toISOString().split('T')[0];
 
 // ─── DOM ───
 const $ = (sel) => document.querySelector(sel);
@@ -33,6 +44,14 @@ const dom = {
   statUsers:     $('#statUsers'),
   toast:         $('#toast'),
   toastMsg:      $('#toastMsg'),
+  // Player Requests
+  prStatOpen:    $('#prStatOpen'),
+  prStatFilled:  $('#prStatFilled'),
+  prStatJoined:  $('#prStatJoined'),
+  prStatSport:   $('#prStatSport'),
+  prTableBody:   $('#adminPRTableBody'),
+  prTableWrap:   $('#adminPRTableWrap'),
+  prEmpty:       $('#adminPREmpty'),
 };
 
 // ─── Auth Check ───
@@ -121,9 +140,79 @@ async function cancelBooking(bookingId) {
   if (data._status === 200) {
     showToast('Booking cancelled successfully.');
     loadBookings();
+    loadPlayerRequests(); // Refresh in case booking cascade happened
   } else {
     showToast(data.error || 'Failed to cancel booking.');
   }
+}
+
+// ─── Player Requests ───
+async function loadPlayerRequests() {
+  try {
+    const data = await API.get('/api/admin/player-requests');
+    const stats = data.stats || {};
+    const requests = data.requests || [];
+
+    // Update stats
+    dom.prStatOpen.textContent = stats.open_games || 0;
+    dom.prStatFilled.textContent = stats.filled_games || 0;
+    dom.prStatJoined.textContent = stats.residents_joined || 0;
+    dom.prStatSport.textContent = stats.most_active_sport || '—';
+
+    if (requests.length === 0) {
+      dom.prTableWrap.style.display = 'none';
+      dom.prEmpty.style.display = 'block';
+    } else {
+      dom.prTableWrap.style.display = 'block';
+      dom.prEmpty.style.display = 'none';
+      renderPRTable(requests);
+    }
+  } catch (err) {
+    console.error('Failed to load player requests:', err);
+  }
+}
+
+function renderPRTable(requests) {
+  dom.prTableBody.innerHTML = requests.map((r, i) => {
+    const statusColors = {
+      'OPEN': 'color: #34d399;',
+      'FILLED': 'color: #818cf8;',
+      'CLOSED': 'color: #6b7280;',
+      'CANCELLED': 'color: #f87171;'
+    };
+
+    const canClose = r.status === 'OPEN' || r.status === 'FILLED';
+
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td class="facility-cell">${r.sport_emoji} ${r.sport_name}</td>
+        <td>${r.creator_name}</td>
+        <td>${r.date}</td>
+        <td>${r.time_label}</td>
+        <td>${r.joined_count} / ${r.players_needed}</td>
+        <td><span style="${statusColors[r.status] || ''} font-weight:600;">${r.status}</span></td>
+        <td>
+          ${canClose ? `<button class="cancel-btn" data-pr-close-id="${r.id}" title="Close this player request">Close</button>` : '—'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Attach close handlers
+  dom.prTableBody.querySelectorAll('[data-pr-close-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Close this player request?')) return;
+      const id = parseInt(btn.dataset.prCloseId, 10);
+      const data = await API.post(`/api/admin/player-requests/${id}/close`);
+      if (data._status === 200) {
+        showToast('Player request closed.');
+        loadPlayerRequests();
+      } else {
+        showToast(data.error || 'Failed to close player request.');
+      }
+    });
+  });
 }
 
 // ─── Date Navigation ───
@@ -187,8 +276,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isAdmin = await checkAdminAuth();
   if (!isAdmin) return;
 
-  // Load bookings
+  // Load bookings and player requests
   loadBookings();
+  loadPlayerRequests();
 
   // Date picker change
   dom.datePicker.addEventListener('change', () => {
